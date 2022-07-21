@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+use strict;
+use warnings FATAL=>'all';
+use DateTime;
+
+# Time format : YYYYMMDDHHMMSS
+my $TEMPLATE = "Time:DATETIME  //Time setting,YYYY―ＭＭ-DD―HHMMSS, Advice: Not change\r\nGain:5   //Adjust recording sensitivity 0-7, Advice:5\r\nVor:0    //0 means voice activated mode is ff, 1-10 means is on, Advice: 0\r\nBit:3     //0-32kbps  1-64kbps  2-128kbps  3-192kbps 4-384kbps, Advice: 3\r\nPART:0  //Recording file division, Adjustment 0-240 minutes, 0 meaning 8 hours, Advice:0\r\n\r\n";
+my $HOUR_OFFSET = 0; # GMT offset, e.g. -5 for EST
+
+my $file = shift;
+die "usage: $0 /path/to/RECSET.txt" if !defined($file);
+die "wrong file" if ($file !~ /RECSET\.txt$/);
+
+my $time = time();
+$time += $HOUR_OFFSET * 3600;
+my $dt = DateTime->from_epoch( epoch => $time);
+my $time_formatted = $dt->ymd('') . $dt->hms('');
+
+my $template = $TEMPLATE;
+$template =~ s/DATETIME/$time_formatted/;
+
+open  RECSET, ">$file" or die "can't open $file for writing";
+print RECSET $template or die "could not write to $file";
+close RECSET;
+
+print "Wrote time: $time_formatted . Unmount safely, disconnect cable, do a test recording, verify time.\n";
